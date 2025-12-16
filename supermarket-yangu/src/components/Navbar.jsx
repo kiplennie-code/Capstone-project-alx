@@ -15,7 +15,7 @@ export default function Navbar({ cartCount }) {
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h1 className="text-3xl font-bold">🇰🇪 Supermarket Yangu POS</h1>
+            <h1 className="text-3xl font-bold"> Supermarket Yangu POS</h1>
             <p className="text-green-100 text-sm">Nairobi, Kenya</p>
           </div>
           {cartCount > 0 && (
