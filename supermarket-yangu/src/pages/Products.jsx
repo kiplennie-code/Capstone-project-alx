@@ -1,7 +1,7 @@
-export default function Products() {
+export default function POS() {
   return (
     <div className="p-6 text-xl">
-      Products Page
+      POS Page
     </div>
   );
 }
