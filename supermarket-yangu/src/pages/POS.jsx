@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { getAllProducts } from '../services/fakeStoreApi';
-import { Search } from 'lucide-react';
+import { Plus, Minus, X, Search } from 'lucide-react';
 import Loader from '../components/Loader';
 
-export default function POS({ cart, setCart, inventory, setInventory, initializeInventory }) {
+export default function POS({ cart, setCart, inventory, setInventory, setSalesHistory, salesHistory, initializeInventory }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,6 +42,70 @@ export default function POS({ cart, setCart, inventory, setInventory, initialize
     } else {
       setCart([...cart, { ...product, quantity: 1 }]);
     }
+  };
+
+  const updateQuantity = (id, delta) => {
+    const item = cart.find(c => c.id === id);
+    const stock = inventory[id] || 0;
+    const newQuantity = item.quantity + delta;
+
+    if (newQuantity < 1) {
+      removeFromCart(id);
+      return;
+    }
+
+    if (newQuantity > stock) {
+      alert('Not enough stock!');
+      return;
+    }
+
+    setCart(cart.map(item =>
+      item.id === id ? { ...item, quantity: newQuantity } : item
+    ));
+  };
+
+  const removeFromCart = (id) => {
+    setCart(cart.filter(item => item.id !== id));
+  };
+
+  const clearCart = () => {
+    if (window.confirm('Clear entire cart?')) {
+      setCart([]);
+    }
+  };
+
+  const subtotal = cart.reduce((sum, item) => sum + (convertToKSh(item.price) * item.quantity), 0);
+  const tax = subtotal * 0.16;
+  const total = subtotal + tax;
+
+  const handleCheckout = () => {
+    if (cart.length === 0) {
+      alert('Cart is empty!');
+      return;
+    }
+
+    const sale = {
+      id: Date.now(),
+      date: new Date().toLocaleString(),
+      items: cart.map(item => ({
+        ...item,
+        priceKSh: convertToKSh(item.price)
+      })),
+      subtotal,
+      tax,
+      total
+    };
+
+    // Update inventory
+    const newInventory = { ...inventory };
+    cart.forEach(item => {
+      newInventory[item.id] = (newInventory[item.id] || 0) - item.quantity;
+    });
+    setInventory(newInventory);
+
+    setSalesHistory([sale, ...salesHistory]);
+    setCart([]);
+    alert(`Sale completed! Total: KSh ${total.toFixed(2)}`);
   };
 
   const filteredProducts = products.filter(product =>
@@ -99,13 +163,87 @@ export default function POS({ cart, setCart, inventory, setInventory, initialize
         </div>
       </div>
 
-      {/* Cart Section - Placeholder */}
+      {/* Cart Section */}
       <div className="lg:col-span-1">
         <div className="bg-white rounded-lg shadow-md p-6 sticky top-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Cart</h2>
-          <p className="text-gray-400 text-center py-8">
-            Cart functionality coming 
-          </p>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-gray-800">Cart</h2>
+            {cart.length > 0 && (
+              <button
+                onClick={clearCart}
+                className="text-red-500 hover:text-red-700 text-sm font-medium"
+              >
+                Clear All
+              </button>
+            )}
+          </div>
+
+          <div className="space-y-3 max-h-[400px] overflow-y-auto mb-4">
+            {cart.length === 0 ? (
+              <p className="text-gray-400 text-center py-8">Cart is empty</p>
+            ) : (
+              cart.map(item => (
+                <div key={item.id} className="p-3 bg-gray-50 rounded-lg">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-medium text-sm flex-1 line-clamp-2">
+                      {item.title}
+                    </h4>
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      className="ml-2 text-red-500 hover:text-red-700"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-xs text-gray-500">
+                      KSh {convertToKSh(item.price)} each
+                    </p>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => updateQuantity(item.id, -1)}
+                        className="w-6 h-6 bg-gray-200 rounded hover:bg-gray-300 flex items-center justify-center"
+                      >
+                        <Minus size={12} />
+                      </button>
+                      <span className="w-8 text-center font-medium text-sm">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => updateQuantity(item.id, 1)}
+                        className="w-6 h-6 bg-gray-200 rounded hover:bg-gray-300 flex items-center justify-center"
+                      >
+                        <Plus size={12} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="border-t pt-4 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>Subtotal:</span>
+              <span>KSh {subtotal.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span>VAT (16%):</span>
+              <span>KSh {tax.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-xl font-bold text-green-700 pt-2 border-t">
+              <span>Total:</span>
+              <span>KSh {total.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <button
+            onClick={handleCheckout}
+            disabled={cart.length === 0}
+            className="w-full mt-4 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          >
+            Complete Sale
+          </button>
         </div>
       </div>
     </div>
