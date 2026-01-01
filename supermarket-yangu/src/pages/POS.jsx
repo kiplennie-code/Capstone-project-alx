@@ -9,6 +9,7 @@ export default function POS({ cart, setCart, inventory, setInventory, setSalesHi
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
+    // fetch products on mount
     getAllProducts()
       .then((data) => {
         setProducts(data);
@@ -16,11 +17,12 @@ export default function POS({ cart, setCart, inventory, setInventory, setSalesHi
         setLoading(false);
       })
       .catch((error) => {
-        console.error(error);
+        console.error('Error loading products:', error);
         setLoading(false);
       });
   }, []);
 
+  // convert USD to KSh (rough estimate 1 USD = 150 KSh)
   const convertToKSh = (price) => Math.round(price * 150);
 
   const addToCart = (product) => {
@@ -28,18 +30,21 @@ export default function POS({ cart, setCart, inventory, setInventory, setSalesHi
     const cartItem = cart.find(item => item.id === product.id);
     const currentQty = cartItem ? cartItem.quantity : 0;
 
+    // check stock before adding
     if (currentQty >= stock) {
       alert('Not enough stock!');
       return;
     }
 
     if (cartItem) {
+      // update existing item
       setCart(cart.map(item =>
         item.id === product.id
           ? { ...item, quantity: item.quantity + 1 }
           : item
       ));
     } else {
+      // add new item
       setCart([...cart, { ...product, quantity: 1 }]);
     }
   };
@@ -47,20 +52,20 @@ export default function POS({ cart, setCart, inventory, setInventory, setSalesHi
   const updateQuantity = (id, delta) => {
     const item = cart.find(c => c.id === id);
     const stock = inventory[id] || 0;
-    const newQuantity = item.quantity + delta;
+    const newQty = item.quantity + delta;
 
-    if (newQuantity < 1) {
+    if (newQty < 1) {
       removeFromCart(id);
       return;
     }
 
-    if (newQuantity > stock) {
+    if (newQty > stock) {
       alert('Not enough stock!');
       return;
     }
 
     setCart(cart.map(item =>
-      item.id === id ? { ...item, quantity: newQuantity } : item
+      item.id === id ? { ...item, quantity: newQty } : item
     ));
   };
 
@@ -74,8 +79,9 @@ export default function POS({ cart, setCart, inventory, setInventory, setSalesHi
     }
   };
 
+  // calculate totals
   const subtotal = cart.reduce((sum, item) => sum + (convertToKSh(item.price) * item.quantity), 0);
-  const tax = subtotal * 0.16;
+  const tax = subtotal * 0.16; // VAT 16%
   const total = subtotal + tax;
 
   const handleCheckout = () => {
@@ -96,7 +102,7 @@ export default function POS({ cart, setCart, inventory, setInventory, setSalesHi
       total
     };
 
-    // Update inventory
+    // deduct from inventory
     const newInventory = { ...inventory };
     cart.forEach(item => {
       newInventory[item.id] = (newInventory[item.id] || 0) - item.quantity;
@@ -117,9 +123,10 @@ export default function POS({ cart, setCart, inventory, setInventory, setSalesHi
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Products Section */}
+      {/* Products */}
       <div className="lg:col-span-2">
         <div className="bg-white rounded-lg shadow-md p-6">
+          {/* Search bar */}
           <div className="mb-4 relative">
             <Search className="absolute left-3 top-3 text-gray-400" size={20} />
             <input
@@ -131,15 +138,18 @@ export default function POS({ cart, setCart, inventory, setInventory, setSalesHi
             />
           </div>
 
+          {/* Product grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[600px] overflow-y-auto">
             {filteredProducts.map(product => {
               const stock = inventory[product.id] || 0;
+              const isOutOfStock = stock === 0;
+              
               return (
                 <button
                   key={product.id}
                   onClick={() => addToCart(product)}
-                  disabled={stock === 0}
-                  className="bg-white border-2 border-gray-200 rounded-lg p-4 hover:border-green-500 hover:shadow-lg transition-all text-center disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isOutOfStock}
+                  className={`bg-white border-2 border-gray-200 rounded-lg p-4 hover:border-green-500 hover:shadow-lg transition-all text-center ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <img
                     src={product.image}
@@ -154,7 +164,7 @@ export default function POS({ cart, setCart, inventory, setInventory, setSalesHi
                     KSh {convertToKSh(product.price)}
                   </p>
                   <p className={`text-xs mt-1 ${stock > 10 ? 'text-green-600' : stock > 0 ? 'text-orange-600' : 'text-red-600'}`}>
-                    Stock: {stock}
+                    {stock > 0 ? `Stock: ${stock}` : 'Out of Stock'}
                   </p>
                 </button>
               );
@@ -163,7 +173,7 @@ export default function POS({ cart, setCart, inventory, setInventory, setSalesHi
         </div>
       </div>
 
-      {/* Cart Section */}
+      {/* Cart */}
       <div className="lg:col-span-1">
         <div className="bg-white rounded-lg shadow-md p-6 sticky top-6">
           <div className="flex justify-between items-center mb-4">
@@ -222,6 +232,7 @@ export default function POS({ cart, setCart, inventory, setInventory, setSalesHi
             )}
           </div>
 
+          {/* Cart summary */}
           <div className="border-t pt-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span>Subtotal:</span>

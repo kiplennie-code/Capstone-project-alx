@@ -13,13 +13,20 @@ export default function Products({ inventory, initializeInventory }) {
         initializeInventory(data);
         setLoading(false);
       })
-      .catch((error) => {
-        console.error(error);
+      .catch((err) => {
+        console.error(err);
         setLoading(false);
       });
   }, []);
 
   const convertToKSh = (price) => Math.round(price * 150);
+
+  const getStockStatus = (stock) => {
+    if (stock > 20) return { label: 'In Stock', color: 'bg-green-100 text-green-800' };
+    if (stock > 10) return { label: 'Good', color: 'bg-yellow-100 text-yellow-800' };
+    if (stock > 0) return { label: 'Low Stock', color: 'bg-orange-100 text-orange-800' };
+    return { label: 'Out of Stock', color: 'bg-red-100 text-red-800' };
+  };
 
   if (loading) return <Loader />;
 
@@ -42,6 +49,8 @@ export default function Products({ inventory, initializeInventory }) {
           <tbody>
             {products.map(product => {
               const stock = inventory[product.id] || 0;
+              const status = getStockStatus(stock);
+              
               return (
                 <tr key={product.id} className="border-b hover:bg-gray-50">
                   <td className="px-4 py-3">
@@ -62,15 +71,8 @@ export default function Products({ inventory, initializeInventory }) {
                   </td>
                   <td className="px-4 py-3 text-right font-bold">{stock}</td>
                   <td className="px-4 py-3 text-center">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      stock > 20 ? 'bg-green-100 text-green-800' :
-                      stock > 10 ? 'bg-yellow-100 text-yellow-800' :
-                      stock > 0 ? 'bg-orange-100 text-orange-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {stock > 20 ? 'In Stock' : 
-                       stock > 10 ? 'Good' :
-                       stock > 0 ? 'Low Stock' : 'Out of Stock'}
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${status.color}`}>
+                      {status.label}
                     </span>
                   </td>
                 </tr>

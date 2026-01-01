@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { ShoppingCart, Home, Package, DollarSign, BarChart3 } from 'lucide-react';
 
 export default function Navbar({ cartCount }) {
+  // navigation items
   const links = [
     { to: '/', label: 'Home', icon: Home },
     { to: '/pos', label: 'POS', icon: ShoppingCart },
@@ -20,28 +21,29 @@ export default function Navbar({ cartCount }) {
           </div>
           {cartCount > 0 && (
             <div className="bg-white text-green-700 px-4 py-2 rounded-full font-bold">
-              Cart: {cartCount} items
+              Cart: {cartCount} {cartCount === 1 ? 'item' : 'items'}
             </div>
           )}
         </div>
         
         <nav className="flex space-x-2">
-          {links.map(({ to, label, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `flex items-center space-x-2 px-4 py-2 rounded transition-colors ${
-                  isActive
-                    ? 'bg-green-800 text-white'
-                    : 'text-green-100 hover:bg-green-600'
-                }`
-              }
-            >
-              <Icon size={18} />
-              <span>{label}</span>
-            </NavLink>
-          ))}
+          {links.map((link) => {
+            const Icon = link.icon;
+            return (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                className={({ isActive }) =>
+                  isActive 
+                    ? 'flex items-center space-x-2 px-4 py-2 rounded bg-green-800 text-white'
+                    : 'flex items-center space-x-2 px-4 py-2 rounded text-green-100 hover:bg-green-600'
+                }
+              >
+                <Icon size={18} />
+                <span>{link.label}</span>
+              </NavLink>
+            );
+          })}
         </nav>
       </div>
     </header>

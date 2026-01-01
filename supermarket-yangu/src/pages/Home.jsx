@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import supermarketImage from "../assets/super.jpeg";
 import { ShoppingCart, Package, TrendingUp } from 'lucide-react';
 
-export default function Home() {
+function Home() {
   const features = [
     {
       icon: ShoppingCart,
@@ -29,6 +29,7 @@ export default function Home() {
 
   return (
     <div>
+      {/* Hero section */}
       <div className="text-center mb-12">
         <h2 className="text-4xl font-bold text-green-700 mb-4">
           Welcome to Supermarket Yangu 🇰🇪
@@ -38,6 +39,7 @@ export default function Home() {
         </p>
       </div>
 
+      {/* Features grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         {features.map((feature) => {
           const Icon = feature.icon;
@@ -57,13 +59,14 @@ export default function Home() {
         })}
       </div>
 
+      {/* About section */}
       <div className="bg-white rounded-lg shadow-md p-8">
         <img
-  src={supermarketImage}
-  alt="Supermarket"
-  className="w-full h-64 object-cover rounded-lg mb-6"
-  loading="lazy"
-/>
+          src={supermarketImage}
+          alt="Supermarket"
+          className="w-full h-64 object-cover rounded-lg mb-6"
+          loading="lazy"
+        />
 
         <h3 className="text-2xl font-bold mb-4">Modern POS System</h3>
         <p className="text-gray-600 mb-4">
@@ -80,3 +83,5 @@ export default function Home() {
     </div>
   );
 }
+
+export default Home;

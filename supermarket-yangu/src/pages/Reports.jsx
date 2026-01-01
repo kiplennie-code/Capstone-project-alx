@@ -1,6 +1,7 @@
 import { TrendingUp, ShoppingBag, DollarSign, Package } from 'lucide-react';
 
-export default function Reports({ salesHistory, inventory }) {
+function Reports({ salesHistory, inventory }) {
+  // calculate stats
   const totalSales = salesHistory.length;
   const totalRevenue = salesHistory.reduce((sum, sale) => sum + sale.total, 0);
   const totalItemsSold = salesHistory.reduce((sum, sale) => 
@@ -9,6 +10,7 @@ export default function Reports({ salesHistory, inventory }) {
   
   const avgSaleValue = totalSales > 0 ? totalRevenue / totalSales : 0;
 
+  // inventory metrics
   const lowStockProducts = Object.entries(inventory).filter(([_, stock]) => stock < 10).length;
   const outOfStockProducts = Object.entries(inventory).filter(([_, stock]) => stock === 0).length;
 
@@ -44,6 +46,7 @@ export default function Reports({ salesHistory, inventory }) {
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-2xl font-bold mb-6 text-green-700">Sales Analytics</h2>
         
+        {/* Stats cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat) => {
             const Icon = stat.icon;
@@ -60,6 +63,7 @@ export default function Reports({ salesHistory, inventory }) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Inventory status */}
           <div className="border rounded-lg p-6">
             <h3 className="text-lg font-bold mb-4 flex items-center">
               <Package className="mr-2" size={20} />
@@ -77,6 +81,7 @@ export default function Reports({ salesHistory, inventory }) {
             </div>
           </div>
 
+          {/* Performance metrics */}
           <div className="border rounded-lg p-6">
             <h3 className="text-lg font-bold mb-4 flex items-center">
               <TrendingUp className="mr-2" size={20} />
@@ -112,3 +117,5 @@ export default function Reports({ salesHistory, inventory }) {
     </div>
   );
 }
+
+export default Reports;

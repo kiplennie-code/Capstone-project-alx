@@ -1,6 +1,5 @@
-// App.jsx
 import { Routes, Route } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -9,17 +8,18 @@ import Products from './pages/Products';
 import Sales from './pages/Sales';
 import Reports from './pages/Reports';
 
-export default function App() {
+function App() {
   const [cart, setCart] = useState([]);
   const [salesHistory, setSalesHistory] = useState([]);
   const [inventory, setInventory] = useState({});
 
-  // Initialize inventory from FakeStore products
+  // init inventory when products load
   const initializeInventory = (products) => {
     const inv = {};
     products.forEach(product => {
       if (!inventory[product.id]) {
-        inv[product.id] = Math.floor(Math.random() * 50) + 20; // Random stock 20-70
+        // random stock between 20 and 70
+        inv[product.id] = Math.floor(Math.random() * 50) + 20;
       }
     });
     setInventory(prev => ({ ...prev, ...inv }));
@@ -75,3 +75,5 @@ export default function App() {
     </div>
   );
 }
+
+export default App;
